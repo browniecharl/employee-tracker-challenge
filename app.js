@@ -79,3 +79,33 @@ const addDept = () => {
 
     })
 };
+const addEmp = () => {
+    connection.query('SELECT * FROM role', function (err, res) {
+        if (err) throw err;
+        inquirer.prompt([
+            {
+                type: 'input',
+                name: 'first_name',
+                message: 'Enter the first name of employee.'
+            },
+            {
+                type: 'input',
+                name: 'last_name',
+                message: 'Enter last name of the employee'
+            },
+            {
+                type: 'list',
+                name: 'role',
+                message: 'Select a role for the employee',
+                choices: function () {
+                    const roleArray = [];
+                    for(let i = 0; i < res.length; i++) {
+                        roleArray.push(res[i].title);
+                    }
+                    return roleArray;
+                }
+            },
+            
+        ])
+    })
+}
