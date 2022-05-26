@@ -105,7 +105,78 @@ const addEmp = () => {
                     return roleArray;
                 }
             },
-            
-        ])
+            {
+                type: 'input',
+                name: 'manager_id',
+                message: 'Enter managers ID if employee is not the manager'
+            }
+        ]).then((answer) => {
+            let role_id;
+            for (let m = 0; m < res.length; m++) {
+                if (res[m].title === answer.role) {
+                    role_id = res[m].id;
+                    console.log(role_id)
+                }
+            }
+            connection.query('INSERT INTO employee SET ?',
+            {
+                first_name: answer.first_name,
+                last_name: answer.last_name,
+                role_id: role_id,
+                manager_id: answer.manager_id
+            },
+            function (err) {
+                if (err) throw err;
+                console.log('Employee has been successfully added');
+                tracker();
+            })
+        })
     })
-}
+};
+const addRole = () => {
+    connection.query('SELECT * FROM department', function (err, res) {
+        if (err) throw err;
+        inquirer.prompt([
+            {
+                type: 'input',
+                name: 'title',
+                message: 'Enter the employees role'
+            },
+            {
+                type: 'input',
+                name: 'salary',
+                message: 'Enter salary for employee'
+            },
+            {
+                type: 'list',
+                name: 'department',
+                message: 'Select a role for the employee',
+                choices: function() {
+                    const departmentArray = [];
+                    for (let i = 0; i < res.length; i++) {
+                        departmentArray.push(res[i].name);
+                    }
+                    return departmentArray;
+                }
+            }
+        ]).then((answer) => {
+            let department_id;
+            for (let m = 0; i < res.length; m++) {
+                if (res[m].name === answer.department) {
+                    department_id = res[m].id;
+                }
+            }
+            connection.query('INSERT INTO role SET ?',
+            {
+                title: answer.title,
+                salary: answer.salary,
+                department_id: department_id,
+            },
+            function (err) {
+                if (err) throw err;
+                console.log('Role for employee has been successfully added');
+                tracker();
+            })
+        })
+    })
+};
