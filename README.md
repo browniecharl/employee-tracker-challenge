@@ -14,5 +14,6 @@ This app is able to track employees for a company and make it easier to organize
 Video of application in action
 
 ### Screenshot
+![](./assets/employee-tracker.png)
 
 Made by Robert Velez
