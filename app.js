@@ -1,5 +1,5 @@
-const mysql = require('mysql2');
 const inquirer = require('inquirer');
+const mysql = require('mysql2');
 const consoleTable = require('console.table');
 
 const connection = mysql.createConnection({
@@ -10,74 +10,75 @@ const connection = mysql.createConnection({
     database: 'employees_db'
 });
 
-connection.connect((err) => {
-    if (err) throw err;
-    tracker();
-})
+connection.connect(function(err) {
+    if (err) throw err
+    console.log('connected as Id' + connection.threadId)
+    startTracker();
+});
 
-const tracker = () => {
-    inquirer.prompt({
-        type: 'list',
-        name: 'menuOption',
-        Message: 'Please choose an option',
-        choices: [
-            'Add department',
-            'Add employee',
-            'Add role',
-            'View departments',
-            'View employees',
-            'View roles',
-            'Update role'
-        ]
-    })
-    .then((answer) => {
-        switch(answer.menuOption) {
-            case 'Add department':
-                addDept();
+const startTracker = () => {
+    inquirer.prompt ({
+            type: 'list',
+            name: 'choice',
+            message: 'Please select an option.',
+            choices: [
+                'View All Employees',
+                'View Departments',
+                'View Roles',
+                'Add Employee',
+                'Add Role',
+                'Add Department',
+                'Update Employee Role'
+            ]
+        }).then((answer) => {
+        switch (answer.choice) {
+            case 'View All Employees':
+                viewEmployees();
                 break;
-            case 'Add employee':
+            case 'View Departments':
+                viewByDepts();
+                break;
+            case 'View Roles':
+                viewByRole();
+                break;
+            case 'Add Employee':
                 addEmp();
                 break;
-            case 'Add role':
+            case 'Add Role':
                 addRole();
                 break;
-            case 'View departments':
-                viewDep();
+            case 'Add Department':
+                addDept();
                 break;
-            case 'View employees':
-                viewEmp();
+            case 'Update Employee Role':
+                updateEmpRole();
                 break;
-            case 'View roles':
-                viewRole();
-                break;
-            case 'Update role':
-                updateRole();
-                break;                
         }
     })
 };
-
-const addDept = () => {
-    inquirer.prompt([
-        {
-            type: 'input',
-            name: 'theDepartment',
-            message: 'Enter the department name',
-        }
-    ]).then((answer) => {
-        connection.query(
-            'INSERT INTO department SET?',
-            {
-                name: answer.theDepartment
-            }
-        );
-        connection.query('SELECT * FROM department', function (err, res) {
-            if (err) throw err;
-            console.log ('Department has been successfully added.');
-            tracker();
-        })
-
-    })
+const viewEmployees = () => {
+    const query = 'SELECT * FROM employee';
+    connection.query(query, (err, res) => {
+        if (err) throw err;
+        console.table('Employee List:', res);
+        startTracker();
+    });
+};
+const viewByDepts = () => {
+    const query = 'SELECT * FROM department';
+    connection.query(query, (err, res) => {
+        if (err) throw err;
+        console.table('Department List:', res);
+        startTracker();
+    });
+};
+const viewByRole = () => {
+    const query = 'SELECT * FROM role';
+    connection.query(query, (err, res) => {
+        if (err) throw err;
+        console.table('Role List:', res);
+        startTracker();
+    });
 };
 const addEmp = () => {
     connection.query('SELECT * FROM role', function (err, res) {
@@ -86,20 +87,20 @@ const addEmp = () => {
             {
                 type: 'input',
                 name: 'first_name',
-                message: 'Enter the first name of employee.'
+                message: 'Enter first name of employee'
             },
             {
                 type: 'input',
                 name: 'last_name',
-                message: 'Enter last name of the employee'
+                message: 'Enter last name of employee'
             },
             {
-                type: 'list',
+                type: 'List',
                 name: 'role',
-                message: 'Select a role for the employee',
+                message: 'Select role for employee',
                 choices: function () {
-                    const roleArray = [];
-                    for(let i = 0; i < res.length; i++) {
+                    var roleArray = [];
+                    for (let i = 0; i < res.length; i++) {
                         roleArray.push(res[i].title);
                     }
                     return roleArray;
@@ -108,12 +109,12 @@ const addEmp = () => {
             {
                 type: 'input',
                 name: 'manager_id',
-                message: 'Enter managers ID if employee is not the manager'
+                message: 'Enter manager id of employee'
             }
         ]).then((answer) => {
             let role_id;
             for (let m = 0; m < res.length; m++) {
-                if (res[m].title === answer.role) {
+                if (res[m].title == answer.role) {
                     role_id = res[m].id;
                     console.log(role_id)
                 }
@@ -124,59 +125,12 @@ const addEmp = () => {
                 last_name: answer.last_name,
                 role_id: role_id,
                 manager_id: answer.manager_id
-            },
-            function (err) {
-                if (err) throw err;
-                console.log('Employee has been successfully added');
-                tracker();
-            })
+        },
+        function (err) {
+            if (err) throw err;
+            console.log('Employee has been added');
+            startTracker();
         })
     })
-};
-const addRole = () => {
-    connection.query('SELECT * FROM department', function (err, res) {
-        if (err) throw err;
-        inquirer.prompt([
-            {
-                type: 'input',
-                name: 'title',
-                message: 'Enter the employees role'
-            },
-            {
-                type: 'input',
-                name: 'salary',
-                message: 'Enter salary for employee'
-            },
-            {
-                type: 'list',
-                name: 'department',
-                message: 'Select a role for the employee',
-                choices: function() {
-                    const departmentArray = [];
-                    for (let i = 0; i < res.length; i++) {
-                        departmentArray.push(res[i].name);
-                    }
-                    return departmentArray;
-                }
-            }
-        ]).then((answer) => {
-            let department_id;
-            for (let m = 0; i < res.length; m++) {
-                if (res[m].name === answer.department) {
-                    department_id = res[m].id;
-                }
-            }
-            connection.query('INSERT INTO role SET ?',
-            {
-                title: answer.title,
-                salary: answer.salary,
-                department_id: department_id,
-            },
-            function (err) {
-                if (err) throw err;
-                console.log('Role for employee has been successfully added');
-                tracker();
-            })
-        })
-    })
+})
 };
