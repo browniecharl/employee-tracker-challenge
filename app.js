@@ -60,7 +60,7 @@ const addEmployee = async () => {
   connection.query('Select * FROM role', async (err, roles) => {
     if (err) throw err; 
     
-    connection.query('Select * FROM employee WHERE manager_id IS NULL', async (err, managers) => {
+    connection.query('Select * FROM employee WHERE manager_id IS NOT NULL', async (err, managers) => {
       if (err) throw err; 
 
     managers = managers.map(manager => ({name:manager.first_name + " " + manager.last_name, value: manager.id}));
