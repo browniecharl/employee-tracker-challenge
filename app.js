@@ -1,6 +1,7 @@
 const mysql = require('mysql2');
 const inquirer = require('inquirer');
 const consoleTable = require('console.table');
+// Will create the connection
 const connection = mysql.createConnection({
   host: "localhost",
   port: 3306,
@@ -8,7 +9,7 @@ const connection = mysql.createConnection({
   password: "",
   database: "employees_db",
 });
-
+// Grabs current employees and displays their information
 const viewEmployees = () => {  
   const query = `
   SELECT e.id, e.first_name, e.last_name, role.title, department.name AS department, salary, IFNULL(concat(m.first_name, ' ', m.last_name), 'N/A') AS manager
@@ -18,8 +19,7 @@ const viewEmployees = () => {
   JOIN role
   ON e.role_id = role.id
   JOIN department
-  ON role.department_id = department.id;`
-    
+  ON role.department_id = department.id;`   
   connection.query(
     query,
     (err, results) => {
@@ -29,7 +29,7 @@ const viewEmployees = () => {
       startPrompt();
   })
 }
-
+// Function to create new employee
 const addEmployee = async () => {  
     connection.query('Select * FROM role', async (err, roles) => {
       if (err) throw err;       
@@ -63,7 +63,8 @@ const addEmployee = async () => {
         ])      
         if (responses.manager_id === "None") {
           responses.manager_id = null;
-        }  
+        }
+        // Inserts new employee information into table  
       connection.query(
           'INSERT INTO employee SET ?',
           {
@@ -81,7 +82,7 @@ const addEmployee = async () => {
     })
   })
   }
-
+// Function display all departments
 const viewDepartments = () => {
   const query = `SELECT department.id AS "Department ID", department.name AS Department FROM employees_db.department`;
   connection.query(
@@ -93,7 +94,7 @@ const viewDepartments = () => {
       startPrompt();
   })
 }
-
+// function to request department information
 const getDepartments = () => {
     return new Promise( (resolve, reject) => {    
       const query = `SELECT * FROM employees_db.department`;
@@ -105,7 +106,7 @@ const getDepartments = () => {
     })
   })
   }
-
+// Function to add a new department
 const addDepartment = async () => {
     const response = await inquirer.prompt([
         {
@@ -126,7 +127,7 @@ const addDepartment = async () => {
         }
       )
   }
-
+// function to view all roles and role information
 const viewRoles = () => {
   const query = `SELECT role.id AS "Role ID", role.title AS Role, role.salary AS Salary, role.department_id AS "Department ID" FROM employees_db.role`;
   connection.query(
@@ -138,7 +139,7 @@ const viewRoles = () => {
       startPrompt();
   })
 }
-
+// function to add new role
 const addRole = async () => {  
     const departments = await getDepartments();
     const responses = await inquirer.prompt([
@@ -177,7 +178,7 @@ const addRole = async () => {
         startPrompt();
     })
   }
-
+// function to update a current employee role
 const updateEmpRole = async () => {  
     connection.query('Select * FROM employee', async (err, employees) => {
       if (err) throw err;    
@@ -191,7 +192,7 @@ const updateEmpRole = async () => {
         ])    
       connection.query('Select * FROM role', async (err, roles) => {
         if (err) throw err;
-  
+  // function to choose new role for employee
         const roleSelected = await inquirer.prompt([
             {
               name: 'role_id',
@@ -219,6 +220,7 @@ const updateEmpRole = async () => {
       })
     })
   }
+// starts the menu prompt and includes choices to get started
 const startPrompt = () => {
   inquirer.prompt([
       {
