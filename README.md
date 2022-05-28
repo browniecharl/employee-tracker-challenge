@@ -12,6 +12,7 @@ This app is able to track employees for a company and make it easier to organize
 
 ## Usage
 Video of application in action
+[Employee Tracker](https://drive.google.com/file/d/11P8hJ7lSrNC3frI1qVvvqHyVlhAFLS5-/view)
 
 ### Screenshot
 ![](./assets/employee-tracker.png)
